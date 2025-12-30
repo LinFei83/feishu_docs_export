@@ -153,12 +153,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
                       marginBottom: '12px'
                     }}>
                       <Paragraph style={{ margin: 0, fontSize: '13px', color: '#52c41a' }}>
-                        <strong>重定向URL配置：</strong>请确保在飞书应用设置中添加以下重定向URL：
+                        <strong>重定向URL配置（必须配置）：</strong>请确保在飞书应用设置中添加以下重定向URL：
                       </Paragraph>
                       <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '12px', color: '#389e0d' }}>
-                        <li><code>http://localhost:3000</code></li>
-                        <li><code>http://localhost:3001</code></li>
+                        <li><code>http://localhost:3000/callback</code></li>
+                        <li><code>http://localhost:3001/callback</code></li>
                       </ul>
+                      <Paragraph style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#d46b08' }}>
+                        <strong>注意：</strong>必须添加完整的URL（包含 /callback 路径），否则会出现 4401 错误
+                      </Paragraph>
                       <Paragraph style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#389e0d' }}>
                         路径：飞书开放平台 → 应用管理 → 您的应用 → 安全设置 → 重定向URL
                       </Paragraph>

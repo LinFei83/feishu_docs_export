@@ -280,7 +280,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
         redirectUri.current = `http://localhost:${port.current}/callback`;
         console.log("redirectUri", redirectUri.current);
         // @ts-ignore
-        const goto = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${feishuConfig.appId}&redirect_uri=${redirectUri.current}&response_type=code&scope=${encodeURIComponent(FEISHU_SCOPE)}&state=STATE`;
+        const goto = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${encodeURIComponent(feishuConfig.appId)}&redirect_uri=${encodeURIComponent(redirectUri.current)}&response_type=code&scope=${encodeURIComponent(FEISHU_SCOPE)}&state=STATE`;
         console.log("goto", goto);
         try {
           // 清理页面中所有可能存在的飞书QR码元素
