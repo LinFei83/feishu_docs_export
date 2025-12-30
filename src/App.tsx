@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Avatar, Dropdown, Typography, Space, ConfigProvider, App as AntdApp } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { listen } from '@tauri-apps/api/event';
+import { listen, emit } from '@tauri-apps/api/event';
 import AuthPage from './components/AuthPage';
 import HomePage from './components/HomePage';
 import TaskListPage from './components/TaskListPage';
@@ -69,10 +69,12 @@ const App: React.FC = () => {
   /**
    * 处理配置保存
    */
-  const handleConfigSaved = (config: FeishuConfig) => {
+  const handleConfigSaved = async (config: FeishuConfig) => {
     // 重新设置 feishuApi 实例
     FeishuApi.resetInstance(config);
     setHasValidConfig(true);
+    // 发送配置更新事件通知 AuthPage 重新加载配置
+    await emit('config-updated', { message: '配置已更新' });
     setCurrentPage('auth');
   };
 

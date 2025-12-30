@@ -3,7 +3,7 @@ import { Card, Typography, App, Alert } from 'antd';
 import { feishuApi, FeishuConfig } from '../utils/feishuApi';
 import { openUrl} from '@tauri-apps/plugin-opener'
 import { start, cancel, onUrl } from '@fabianlars/tauri-plugin-oauth';
-import { emit } from '@tauri-apps/api/event';
+import { emit, listen } from '@tauri-apps/api/event';
 
 
 
@@ -48,9 +48,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
   const isProcessingAuth = useRef(false); // 添加授权处理标记
   
   /**
-   * 从localStorage加载飞书配置
+   * 加载飞书配置
    */
-  useEffect(() => {
+  const loadConfig = () => {
     try {
       const configStr = localStorage.getItem('feishu_config');
       if (configStr) {
@@ -64,6 +64,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
         
         setFeishuConfig(config);
         setConfigError('');
+        console.log('飞书配置加载成功:', { appId: config.appId, endpoint: config.endpoint });
       } else {
         setConfigError('尚未配置飞书应用信息，请先在设置页面配置');
       }
@@ -71,6 +72,25 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
       console.error('加载飞书配置失败:', error);
       setConfigError('加载配置失败，请检查配置是否正确');
     }
+  };
+  
+  /**
+   * 组件挂载时加载配置，并监听配置更新事件
+   */
+  useEffect(() => {
+    // 初始加载配置
+    loadConfig();
+    
+    // 监听配置更新事件
+    const unlistenConfigUpdated = listen('config-updated', () => {
+      console.log('收到配置更新事件，重新加载配置');
+      loadConfig();
+    });
+    
+    // 清理监听器
+    return () => {
+      unlistenConfigUpdated.then(unlisten => unlisten());
+    };
   }, []);
   
   /**
