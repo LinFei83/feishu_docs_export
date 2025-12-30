@@ -171,6 +171,14 @@ export class FeishuApi {
     }
     return FeishuApi.instance;
   }
+  
+  /**
+   * 获取当前实例（用于导出）
+   * 确保总是返回最新的实例
+   */
+  static get current(): FeishuApi {
+    return FeishuApi.getInstance();
+  }
 
   /**
    * 重新设置实例配置
@@ -709,5 +717,11 @@ export class FeishuApi {
   }
 }
 
+// 导出 getter 函数，确保总是返回最新的实例
+export function getFeishuApi(): FeishuApi {
+  return FeishuApi.getInstance();
+}
+
+// 为了向后兼容，保留 feishuApi 导出（但推荐使用 getFeishuApi()）
 export const feishuApi = FeishuApi.getInstance();
 

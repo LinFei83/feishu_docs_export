@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffe
 import { Card, Table, Button, Tag, Typography, Spin, Tooltip, App } from 'antd';
 import { ReloadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { DownloadFile } from '../types/database';
-import { feishuApi } from '../utils/feishuApi';
+import { getFeishuApi } from '../utils/feishuApi';
 import * as taskManager from '../utils/taskManager';
 import { FeishuFile, FeishuWikiNode } from '../types';
 import { FilesDiscoveredEvent } from '../types/event';
@@ -236,7 +236,7 @@ const FileListPage: React.FC<FileListPageProps> = ({ taskId, taskName, onGoBack 
    */
   const handleRetryFile = useCallback(async (file: DownloadFile) => {
     try {
-      if (!(await feishuApi.checkToken())) {
+      if (!(await getFeishuApi().checkToken())) {
         message.error('请先登录飞书账号');
         return;
       }

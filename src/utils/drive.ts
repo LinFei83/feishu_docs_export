@@ -1,4 +1,4 @@
-import { feishuApi } from './feishuApi';
+import { getFeishuApi } from './feishuApi';
 import {
   FeishuRootMeta,
   FeishuFile,
@@ -28,7 +28,7 @@ export class DriveApi {
    */
   async getRootFolderMeta(): Promise<FeishuRootMeta> {
     try {
-      const rootMeta = await feishuApi.rootFolderMeta();
+      const rootMeta = await getFeishuApi().rootFolderMeta();
       // 确保 name 字段存在，如果不存在则设置默认值
       return {
         ...rootMeta,
@@ -47,7 +47,7 @@ export class DriveApi {
   async getFolderFiles(folderToken?: string): Promise<FeishuFile[]> {
     try {
       const folderId = folderToken || 'root';
-      const files = await feishuApi.driveFiles(folderId);
+      const files = await getFeishuApi().driveFiles(folderId);
       return files;
     } catch (error) {
       console.error('Failed to get folder files:', error);
@@ -60,7 +60,7 @@ export class DriveApi {
    */
   async getWikiSpaces(): Promise<FeishuWikiSpace[]> {
     try {
-      const spaces = await feishuApi.wikiSpaces();
+      const spaces = await getFeishuApi().wikiSpaces();
       return spaces;
     } catch (error) {
       console.error('Failed to get wiki spaces:', error);
@@ -78,7 +78,7 @@ export class DriveApi {
     parentNodeToken?: string
   ): Promise<FeishuWikiNode[]> {
     try {
-      const nodes = await feishuApi.spaceNodes(spaceId, {
+      const nodes = await getFeishuApi().spaceNodes(spaceId, {
         parentNodeToken,
       });
       return nodes;

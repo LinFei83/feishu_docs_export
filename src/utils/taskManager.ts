@@ -1,5 +1,5 @@
 import { databaseManager } from './database';
-import { feishuApi } from './feishuApi';
+import { getFeishuApi } from './feishuApi';
 import {
   FeishuFile,
   FeishuFolder,
@@ -160,7 +160,7 @@ async function getChildFiles(folder: DownloadFile): Promise<DownloadFile[]> {
       case 'FeishuRootMeta': {
         const folderToken = (folder.fileInfo as FeishuRootMeta).token;
         console.log("getChildFiles FeishuRootMeta folderToken", folderToken);
-        const driveFiles = await feishuApi.driveFiles(folderToken);
+        const driveFiles = await getFeishuApi().driveFiles(folderToken);
         
         for (const file of driveFiles) {
           childFiles.push(createDownloadFileFromDriveFile(
@@ -176,7 +176,7 @@ async function getChildFiles(folder: DownloadFile): Promise<DownloadFile[]> {
       case 'FeishuFolder': {
         const folderToken = (folder.fileInfo as FeishuFolder).token;
         console.log("getChildFiles FeishuFolder folderToken", folderToken);
-        const driveFiles = await feishuApi.driveFiles(folderToken);
+        const driveFiles = await getFeishuApi().driveFiles(folderToken);
         
         for (const file of driveFiles) {
           childFiles.push(createDownloadFileFromDriveFile(
@@ -192,7 +192,7 @@ async function getChildFiles(folder: DownloadFile): Promise<DownloadFile[]> {
       case 'FeishuWikiSpace': {
         const spaceId = (folder.fileInfo as FeishuWikiSpace).space_id;
         console.log("getChildFiles FeishuWikiSpace spaceId", spaceId);
-        const wikiNodes = await feishuApi.spaceNodes(spaceId);
+        const wikiNodes = await getFeishuApi().spaceNodes(spaceId);
         
         for (const node of wikiNodes) {
           childFiles.push(createDownloadFileFromWikiNode(
@@ -210,7 +210,7 @@ async function getChildFiles(folder: DownloadFile): Promise<DownloadFile[]> {
         const wikiNode = folder.fileInfo as any;
         console.log("getChildFiles FeishuWikiNode folderToken", folderToken, "space_id", wikiNode.space_id);
         if (wikiNode.has_child) {
-          const childNodes = await feishuApi.spaceNodes(
+          const childNodes = await getFeishuApi().spaceNodes(
             wikiNode.space_id,
             { parentNodeToken: folderToken }
           );
@@ -228,7 +228,7 @@ async function getChildFiles(folder: DownloadFile): Promise<DownloadFile[]> {
       }
       
       case 'FeishuWikiRoot': {
-        const wikiSpaces = await feishuApi.wikiSpaces();
+        const wikiSpaces = await getFeishuApi().wikiSpaces();
         
         for (const space of wikiSpaces) {
           childFiles.push({
@@ -872,23 +872,23 @@ async function downloadFile(file: DownloadFile, outputPath: string): Promise<boo
   if (fileType === 'file') {
     // 直接下载文件
     const filePath = await join(outputPath, file.path, file.name);
-    await feishuApi.downloadFileToPath(fileToken, filePath);
+    await getFeishuApi().downloadFileToPath(fileToken, filePath);
     return true;
   } else if (['doc', 'docx', 'sheet', 'bitable'].includes(fileType)) {
     // 需要先导出再下载的文件类型
-    const exportTask = await feishuApi.createExportTask({
+    const exportTask = await getFeishuApi().createExportTask({
       token: fileToken,
       file_extension: getDefaultExtension(fileType),
       type: fileType
     });
     
-      const exportResult = await feishuApi.waitForExportTask(exportTask.ticket, fileToken);
+      const exportResult = await getFeishuApi().waitForExportTask(exportTask.ticket, fileToken);
     
     const extension = getDefaultExtension(fileType);
     const fileName = `${file.name}.${extension}`;
     const filePath = await join(outputPath, file.path, fileName);
     
-    await feishuApi.downloadExportFileToPath(exportResult.file_token, filePath);
+    await getFeishuApi().downloadExportFileToPath(exportResult.file_token, filePath);
     
     return true;
   } else {

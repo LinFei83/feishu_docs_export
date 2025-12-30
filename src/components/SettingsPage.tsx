@@ -171,10 +171,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
                        background: '#fff7e6', 
                        border: '1px solid #ffd591', 
                        borderRadius: '6px', 
-                       padding: '12px'
+                       padding: '12px',
+                       marginBottom: '12px'
                      }}>
                        <Paragraph style={{ margin: 0, fontSize: '13px', color: '#d48806' }}>
-                         <strong>权限配置：</strong>请确保为应用开通以下权限范围（Scope）：
+                         <strong>权限配置（必须）：</strong>请确保为应用开通以下权限范围（Scope）：
                        </Paragraph>
                        <div style={{ margin: '8px 0', padding: '8px', background: '#fef9e7', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace', color: '#8b5a00' }}>
                          docs:doc docs:document.media:download docs:document:export docx:document drive:drive drive:file drive:file:download offline_access
@@ -187,14 +188,30 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
                          <li><code>docs:document.media:download</code> - 下载云文档中的媒体文件</li>
                          <li><code>docs:document:export</code> - 导出云文档为指定格式</li>
                          <li><code>docx:document</code> - 访问新版文档</li>
-                         <li><code>drive:drive</code> - 获取云空间信息</li>
+                         <li><code>drive:drive</code> - <strong style={{color: '#ff4d4f'}}>【必需】</strong>获取云空间信息和文件列表</li>
                          <li><code>drive:file</code> - 访问云空间文件</li>
                          <li><code>drive:file:download</code> - 下载云空间文件</li>
-                         <li><code>offline_access</code> - 离线访问授权数据</li>
+                         <li><code>offline_access</code> - <strong style={{color: '#ff4d4f'}}>【必需】</strong>离线访问授权数据</li>
                        </ul>
                        <Paragraph style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#d46b08' }}>
                          路径：飞书开放平台 → 应用管理 → 您的应用 → 权限管理 → 权限配置
                        </Paragraph>
+                     </div>
+                     
+                     <div style={{ 
+                       background: '#fff1f0', 
+                       border: '1px solid #ffccc7', 
+                       borderRadius: '6px', 
+                       padding: '12px'
+                     }}>
+                       <Paragraph style={{ margin: 0, fontSize: '13px', color: '#cf1322' }}>
+                         <strong>重要提示：</strong>
+                       </Paragraph>
+                       <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px', fontSize: '12px', color: '#cf1322' }}>
+                         <li>配置权限后，必须重新扫码授权才能生效</li>
+                         <li>如遇到"应用尚未开通所需的用户身份权限"错误，请点击错误中的链接申请权限</li>
+                         <li><code>drive:drive</code> 或 <code>drive:drive.metadata:readonly</code> 至少需要开通一个</li>
+                       </ul>
                      </div>
                   </div>
                 )
