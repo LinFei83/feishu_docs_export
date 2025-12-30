@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Typography, App } from 'antd';
-import { feishuApi } from '../utils/feishuApi';
+import { Card, Typography, App, Alert } from 'antd';
+import { feishuApi, FeishuConfig } from '../utils/feishuApi';
 import { openUrl} from '@tauri-apps/plugin-opener'
 import { start, cancel, onUrl } from '@fabianlars/tauri-plugin-oauth';
 import { emit } from '@tauri-apps/api/event';
@@ -9,7 +9,6 @@ import { emit } from '@tauri-apps/api/event';
 
 const { Title, Paragraph } = Typography;
 
-const FEISHU_APP_ID = 'cli_a1ad86f33c38500d';
 const FEISHU_SCOPE = 'docs:doc docs:document.media:download docs:document:export docx:document drive:drive drive:file drive:file:download offline_access';
 // const FEISHU_REDIRECT_URI = 'http://localhost:{}/callback';
 
@@ -39,12 +38,40 @@ interface AuthPageProps {
 const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
   const { message } = App.useApp();
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [feishuConfig, setFeishuConfig] = useState<FeishuConfig | null>(null);
+  const [configError, setConfigError] = useState<string>('');
   const qrContainerRef = useRef<HTMLDivElement>(null);
   const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
   const qrInitializedRef = useRef<boolean>(false);
   const port = useRef(0);
   const redirectUri = useRef('');
   const isProcessingAuth = useRef(false); // 添加授权处理标记
+  
+  /**
+   * 从localStorage加载飞书配置
+   */
+  useEffect(() => {
+    try {
+      const configStr = localStorage.getItem('feishu_config');
+      if (configStr) {
+        const config: FeishuConfig = JSON.parse(configStr);
+        
+        // 验证配置完整性
+        if (!config.appId || !config.appSecret) {
+          setConfigError('飞书应用配置不完整，请先在设置页面完成配置');
+          return;
+        }
+        
+        setFeishuConfig(config);
+        setConfigError('');
+      } else {
+        setConfigError('尚未配置飞书应用信息，请先在设置页面配置');
+      }
+    } catch (error) {
+      console.error('加载飞书配置失败:', error);
+      setConfigError('加载配置失败，请检查配置是否正确');
+    }
+  }, []);
   
   /**
    * 处理授权回调
@@ -210,7 +237,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
    * 初始化飞书QR登录（只执行一次）
    */
   useEffect(() => {
-    if (!scriptLoaded || !qrContainerRef.current || qrInitializedRef.current || globalQRInitialized) return;
+    // 如果配置未加载或配置有错误，不初始化二维码
+    if (!feishuConfig || configError || !scriptLoaded || !qrContainerRef.current || qrInitializedRef.current || globalQRInitialized) return;
 
     // 双重检查，防止React严格模式导致的重复执行
     if (qrInitializedRef.current || globalQRInitialized) return;
@@ -232,7 +260,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
         redirectUri.current = `http://localhost:${port.current}/callback`;
         console.log("redirectUri", redirectUri.current);
         // @ts-ignore
-        const goto = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${FEISHU_APP_ID}&redirect_uri=${redirectUri.current}&response_type=code&scope=${encodeURIComponent(FEISHU_SCOPE)}&state=STATE`;
+        const goto = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${feishuConfig.appId}&redirect_uri=${redirectUri.current}&response_type=code&scope=${encodeURIComponent(FEISHU_SCOPE)}&state=STATE`;
         console.log("goto", goto);
         try {
           // 清理页面中所有可能存在的飞书QR码元素
@@ -337,13 +365,32 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
       qrInitializedRef.current = false;
       globalQRInitialized = false;
     };
-  }, [scriptLoaded]);
+  }, [scriptLoaded, feishuConfig, configError]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <Card style={{ width: 350, textAlign: 'center' }}>
         <Title level={4}>飞书扫码授权</Title>
         <Paragraph>请使用飞书App扫码登录授权</Paragraph>
+        
+        {/* 配置错误提示 */}
+        {configError && (
+          <Alert
+            message="配置错误"
+            description={configError}
+            type="warning"
+            showIcon
+            style={{ marginBottom: '16px', textAlign: 'left' }}
+            action={
+              onGoToSettings && (
+                <a onClick={onGoToSettings} style={{ cursor: 'pointer' }}>
+                  前往设置
+                </a>
+              )
+            }
+          />
+        )}
+        
         {/* QR码容器 */}
         <div 
           ref={qrContainerRef}
@@ -358,7 +405,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onGoToSettings }) => {
             borderRadius: '6px'
           }}
         >
-          {!scriptLoaded && <span style={{ color: '#999' }}>正在加载二维码...</span>}
+          {configError ? (
+            <span style={{ color: '#999' }}>请先配置飞书应用信息</span>
+          ) : !scriptLoaded ? (
+            <span style={{ color: '#999' }}>正在加载二维码...</span>
+          ) : null}
         </div>
         
         {/* 设置链接 */}
