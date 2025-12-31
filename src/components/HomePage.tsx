@@ -202,19 +202,9 @@ const HomePage: React.FC<HomePageProps> = ({ onViewTasks }) => {
 
       setTreeData([driveRoot, wikiRoot]);
       setExpandedKeys([rootMeta.token, 'wiki_root']);
-    } catch (error: any) {
+    } catch (error) {
       console.error('加载根目录数据失败:', error);
-      
-      // 检查是否是权限错误
-      const errorMessage = error?.message || String(error);
-      if (errorMessage.includes('drive:drive') || errorMessage.includes('drive:drive.metadata:readonly') || errorMessage.includes('99991672')) {
-        message.error({
-          content: '应用缺少必需的云空间访问权限。请在飞书开放平台为应用开通 drive:drive 或 drive:drive.metadata:readonly 权限，然后重新扫码授权。',
-          duration: 8
-        });
-      } else {
-        message.error('加载数据失败：' + errorMessage);
-      }
+      message.error('加载数据失败');
     } finally {
       setLoading(false);
     }

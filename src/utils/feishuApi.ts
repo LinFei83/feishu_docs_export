@@ -22,7 +22,7 @@ import {
 import { FeishuFile, FeishuWikiNode, FeishuWikiSpace } from '../types';
 import { createTauriAdapter } from './http';
 import { TokenExpiredEvent } from '../types/event';
-const FEISHU_SCOPE = 'docs:doc docs:document.media:download docs:document:export docx:document drive:drive drive:file drive:file:download offline_access';
+const FEISHU_SCOPE = 'contact:user.employee_id:readonly docs:doc docs:document.media:download docs:document:export docx:document drive:drive drive:file drive:file:download wiki:wiki offline_access';
 
 /**
  * 飞书配置接口
