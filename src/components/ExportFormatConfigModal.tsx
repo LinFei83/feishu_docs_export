@@ -73,20 +73,6 @@ const ExportFormatConfigModal: React.FC<ExportFormatConfigModalProps> = ({ visib
     }
   };
 
-  /**
-   * 重置为默认配置
-   */
-  const handleReset = () => {
-    form.setFieldsValue({
-      docFormat: DEFAULT_EXPORT_FORMAT_CONFIG.doc,
-      docxFormat: DEFAULT_EXPORT_FORMAT_CONFIG.docx,
-      sheetFormat: DEFAULT_EXPORT_FORMAT_CONFIG.sheet,
-      bitableFormat: DEFAULT_EXPORT_FORMAT_CONFIG.bitable,
-      slidesFormat: DEFAULT_EXPORT_FORMAT_CONFIG.slides,
-      mindnoteFormat: DEFAULT_EXPORT_FORMAT_CONFIG.mindnote
-    });
-  };
-
   // 弹窗打开时加载配置
   useEffect(() => {
     if (visible) {
