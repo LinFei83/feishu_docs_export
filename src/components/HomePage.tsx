@@ -11,13 +11,15 @@ import {
   DatabaseOutlined,
   PaperClipOutlined,
   FolderOpenOutlined,
-  CloudOutlined
+  CloudOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
 import { open } from '@tauri-apps/plugin-dialog';
 import { type FeishuWikiRoot, type FeishuWikiSpace, type FeishuWikiNode, type FeishuFile, type FeishuFolder, type FeishuRootMeta, type FeishuWikiRootTreeNode, type FeishuWikiSpaceTreeNode, type FeishuWikiTreeNode, type FeishuFileTreeNode, type FeishuFolderTreeNode, type FeishuRootMetaTreeNode, type TreeNode} from '../types';
 import { type DownloadTask, type DownloadFile, FileStatus, TaskStatus } from '../types/database';
 import { driveApi } from '../utils/drive';
 import { createDownloadTask, startDownloadTask, getDownloadTasks } from '../utils/taskManager';
+import ExportFormatConfigModal from './ExportFormatConfigModal';
 
 
 const iconStyle = {
@@ -152,6 +154,7 @@ const HomePage: React.FC<HomePageProps> = ({ onViewTasks }) => {
   const [tasks, setTasks] = useState<DownloadTask[]>([]);
   const [_tasksLoading, setTasksLoading] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [showExportFormatModal, setShowExportFormatModal] = useState(false);
 
   /**
    * 动态加载子节点数据
@@ -449,15 +452,24 @@ const HomePage: React.FC<HomePageProps> = ({ onViewTasks }) => {
           </div>
         } 
         extra={
-          <Button 
-            type="primary" 
-            icon={<DownloadOutlined />}
-            disabled={!selectedKeys.length || creating}
-            loading={creating}
-            onClick={handleExport}
-          >
-            {creating ? '正在导出...' : '导出'}
-          </Button>
+          <Space>
+            <Button 
+              icon={<SettingOutlined />}
+              onClick={() => setShowExportFormatModal(true)}
+              title="配置导出格式"
+            >
+              导出设置
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<DownloadOutlined />}
+              disabled={!selectedKeys.length || creating}
+              loading={creating}
+              onClick={handleExport}
+            >
+              {creating ? '正在导出...' : '导出'}
+            </Button>
+          </Space>
         }
       >
         <Spin spinning={loading}>
@@ -475,6 +487,11 @@ const HomePage: React.FC<HomePageProps> = ({ onViewTasks }) => {
           </div>
         </Spin>
       </Card>
+
+      <ExportFormatConfigModal 
+        visible={showExportFormatModal}
+        onClose={() => setShowExportFormatModal(false)}
+      />
     </Space>
   );
 };

@@ -19,7 +19,7 @@ import {
   FileQueryOptions,
   WikiNodeQueryOptions,
 } from '../types/feishuApi';
-import { FeishuFile, FeishuWikiNode, FeishuWikiSpace } from '../types';
+import { FeishuFile, FeishuWikiNode, FeishuWikiSpace, ExportFormatConfig, DEFAULT_EXPORT_FORMAT_CONFIG } from '../types';
 import { createTauriAdapter } from './http';
 import { TokenExpiredEvent } from '../types/event';
 const FEISHU_SCOPE = 'contact:user.employee_id:readonly docs:doc docs:document.media:download docs:document:export docx:document drive:drive drive:file drive:file:download wiki:wiki offline_access';
@@ -593,17 +593,34 @@ export class FeishuApi {
   }
 
   /**
+   * 从 localStorage 加载导出格式配置
+   */
+  private loadExportFormatConfig(): ExportFormatConfig {
+    try {
+      const configStr = localStorage.getItem('export_format_config');
+      if (configStr) {
+        return JSON.parse(configStr);
+      }
+    } catch (error) {
+      console.error('加载导出格式配置失败:', error);
+    }
+    return DEFAULT_EXPORT_FORMAT_CONFIG;
+  }
+
+  /**
    * 根据文件类型获取默认导出格式
    * @param fileType 文件类型
    */
   getDefaultExtension(fileType: string): string {
+    const config = this.loadExportFormatConfig();
+    
     const extensionMap: Record<string, string> = {
-      'doc': 'docx',
-      'docx': 'docx',
-      'sheet': 'xlsx',
-      'bitable': 'xlsx',
-      'mindnote': 'pdf',
-      'slides': 'pptx',
+      'doc': config.doc,
+      'docx': config.docx,
+      'sheet': config.sheet,
+      'bitable': config.bitable,
+      'mindnote': config.mindnote,
+      'slides': config.slides,
     };
     
     return extensionMap[fileType] || 'pdf';

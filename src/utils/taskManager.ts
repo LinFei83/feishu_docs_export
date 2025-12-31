@@ -5,7 +5,9 @@ import {
   FeishuFolder,
   FeishuWikiSpace,
   FeishuWikiNode,
-  FeishuRootMeta
+  FeishuRootMeta,
+  ExportFormatConfig,
+  DEFAULT_EXPORT_FORMAT_CONFIG
 } from '../types';
 import {
   DownloadTask,
@@ -1010,14 +1012,33 @@ export async function stopDownloadTask(taskId: number): Promise<boolean> {
 }
 
 /**
+ * 从 localStorage 加载导出格式配置
+ */
+function loadExportFormatConfig(): ExportFormatConfig {
+  try {
+    const configStr = localStorage.getItem('export_format_config');
+    if (configStr) {
+      return JSON.parse(configStr);
+    }
+  } catch (error) {
+    console.error('加载导出格式配置失败:', error);
+  }
+  return DEFAULT_EXPORT_FORMAT_CONFIG;
+}
+
+/**
  * 获取默认文件扩展名
  */
 function getDefaultExtension(fileType: string): string {
+  const config = loadExportFormatConfig();
+  
   const extensionMap: Record<string, string> = {
-    'doc': 'docx',
-    'docx': 'docx',
-    'sheet': 'xlsx',
-    'bitable': 'xlsx'
+    'doc': config.doc,
+    'docx': config.docx,
+    'sheet': config.sheet,
+    'bitable': config.bitable,
+    'mindnote': config.mindnote,
+    'slides': config.slides,
   };
   
   return extensionMap[fileType] || 'pdf';

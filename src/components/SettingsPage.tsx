@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Typography, Space, App, Divider, Collapse } from 'antd';
-import { SettingOutlined, SaveOutlined, ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Button, Typography, Space, App, Divider, Collapse, Select } from 'antd';
+import { SettingOutlined, SaveOutlined, ArrowLeftOutlined, InfoCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import { FeishuConfig } from '../utils/feishuApi';
+import { ExportFormatConfig, DEFAULT_EXPORT_FORMAT_CONFIG } from '../types';
 
 const { Title, Paragraph } = Typography;
 
@@ -51,6 +52,33 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
   };
 
   /**
+   * 从 localStorage 加载导出格式配置
+   */
+  const loadExportFormatConfig = (): ExportFormatConfig => {
+    try {
+      const configStr = localStorage.getItem('export_format_config');
+      if (configStr) {
+        return JSON.parse(configStr);
+      }
+    } catch (error) {
+      console.error('加载导出格式配置失败:', error);
+    }
+    return DEFAULT_EXPORT_FORMAT_CONFIG;
+  };
+
+  /**
+   * 保存导出格式配置到 localStorage
+   */
+  const saveExportFormatConfig = (config: ExportFormatConfig): void => {
+    try {
+      localStorage.setItem('export_format_config', JSON.stringify(config));
+    } catch (error) {
+      console.error('保存导出格式配置失败:', error);
+      throw error;
+    }
+  };
+
+  /**
    * 保存配置到 localStorage
    */
   const saveConfig = (config: FeishuConfig): void => {
@@ -65,7 +93,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
   /**
    * 处理表单提交
    */
-  const handleSubmit = async (values: FeishuConfig) => {
+  const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
       // 验证必填字段
@@ -74,13 +102,30 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
         return;
       }
 
+      // 分离飞书配置和导出格式配置
+      const feishuConfig: FeishuConfig = {
+        appId: values.appId,
+        appSecret: values.appSecret,
+        endpoint: values.endpoint
+      };
+
+      const exportFormatConfig: ExportFormatConfig = {
+        doc: values.docFormat,
+        docx: values.docxFormat,
+        sheet: values.sheetFormat,
+        bitable: values.bitableFormat,
+        slides: values.slidesFormat,
+        mindnote: values.mindnoteFormat
+      };
+
       // 保存配置
-      saveConfig(values);
+      saveConfig(feishuConfig);
+      saveExportFormatConfig(exportFormatConfig);
       message.success('配置保存成功！');
       
       // 通知父组件配置已保存
       if (onConfigSaved) {
-        onConfigSaved(values);
+        onConfigSaved(feishuConfig);
       }
       
       // 如果有返回回调，延迟执行
@@ -104,7 +149,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
     const defaultConfig = {
       appId: '',
       appSecret: '',
-      endpoint: 'https://open.feishu.cn/open-apis'
+      endpoint: 'https://open.feishu.cn/open-apis',
+      docFormat: DEFAULT_EXPORT_FORMAT_CONFIG.doc,
+      docxFormat: DEFAULT_EXPORT_FORMAT_CONFIG.docx,
+      sheetFormat: DEFAULT_EXPORT_FORMAT_CONFIG.sheet,
+      bitableFormat: DEFAULT_EXPORT_FORMAT_CONFIG.bitable,
+      slidesFormat: DEFAULT_EXPORT_FORMAT_CONFIG.slides,
+      mindnoteFormat: DEFAULT_EXPORT_FORMAT_CONFIG.mindnote
     };
     form.setFieldsValue(defaultConfig);
   };
@@ -112,7 +163,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
   // 组件挂载时加载配置
   useEffect(() => {
     const config = loadConfig();
-    form.setFieldsValue(config);
+    const exportFormatConfig = loadExportFormatConfig();
+    form.setFieldsValue({
+      ...config,
+      docFormat: exportFormatConfig.doc,
+      docxFormat: exportFormatConfig.docx,
+      sheetFormat: exportFormatConfig.sheet,
+      bitableFormat: exportFormatConfig.bitable,
+      slidesFormat: exportFormatConfig.slides,
+      mindnoteFormat: exportFormatConfig.mindnote
+    });
   }, [form]);
 
   return (
@@ -257,6 +317,88 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, onConfigSaved }) =>
               style={inputStyle}
               className="custom-input"
             />
+          </Form.Item>
+
+          <Divider>
+            <Space>
+              <FileTextOutlined />
+              <span>导出格式配置</span>
+            </Space>
+          </Divider>
+
+          <Paragraph type="secondary" style={{ fontSize: '13px', marginBottom: '16px' }}>
+            为不同类型的文档选择导出格式
+          </Paragraph>
+
+          <Form.Item
+            label="飞书文档 (Doc)"
+            name="docFormat"
+            initialValue="docx"
+            rules={[{ required: true, message: '请选择导出格式' }]}
+          >
+            <Select size="large" style={inputStyle}>
+              <Select.Option value="docx">Word格式 (.docx)</Select.Option>
+              <Select.Option value="pdf">PDF格式 (.pdf)</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="新版文档 (Docx)"
+            name="docxFormat"
+            initialValue="docx"
+            rules={[{ required: true, message: '请选择导出格式' }]}
+          >
+            <Select size="large" style={inputStyle}>
+              <Select.Option value="docx">Word格式 (.docx)</Select.Option>
+              <Select.Option value="pdf">PDF格式 (.pdf)</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="电子表格 (Sheet)"
+            name="sheetFormat"
+            initialValue="xlsx"
+            rules={[{ required: true, message: '请选择导出格式' }]}
+          >
+            <Select size="large" style={inputStyle}>
+              <Select.Option value="xlsx">Excel格式 (.xlsx)</Select.Option>
+              <Select.Option value="csv">CSV格式 (.csv)</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="多维表格 (Bitable)"
+            name="bitableFormat"
+            initialValue="xlsx"
+            rules={[{ required: true, message: '请选择导出格式' }]}
+          >
+            <Select size="large" style={inputStyle}>
+              <Select.Option value="xlsx">Excel格式 (.xlsx)</Select.Option>
+              <Select.Option value="csv">CSV格式 (.csv)</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="演示文稿 (Slides)"
+            name="slidesFormat"
+            initialValue="pptx"
+            rules={[{ required: true, message: '请选择导出格式' }]}
+          >
+            <Select size="large" style={inputStyle}>
+              <Select.Option value="pptx">PowerPoint格式 (.pptx)</Select.Option>
+              <Select.Option value="pdf">PDF格式 (.pdf)</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="思维笔记 (Mindnote)"
+            name="mindnoteFormat"
+            initialValue="pdf"
+            tooltip="思维笔记仅支持PDF格式"
+          >
+            <Select size="large" style={inputStyle} disabled>
+              <Select.Option value="pdf">PDF格式 (.pdf)</Select.Option>
+            </Select>
           </Form.Item>
 
           <Divider />

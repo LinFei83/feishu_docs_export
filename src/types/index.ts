@@ -216,6 +216,30 @@ export interface DownloadErrorEvent {
 }
 
 /**
+ * 导出格式配置接口
+ */
+export interface ExportFormatConfig {
+  doc: 'docx' | 'pdf';
+  docx: 'docx' | 'pdf';
+  sheet: 'xlsx' | 'csv';
+  bitable: 'xlsx' | 'csv';
+  slides: 'pptx' | 'pdf';
+  mindnote: 'pdf';
+}
+
+/**
+ * 默认导出格式配置
+ */
+export const DEFAULT_EXPORT_FORMAT_CONFIG: ExportFormatConfig = {
+  doc: 'docx',
+  docx: 'docx',
+  sheet: 'xlsx',
+  bitable: 'xlsx',
+  slides: 'pptx',
+  mindnote: 'pdf'
+};
+
+/**
  * 全局窗口接口扩展
  */
 declare global {
